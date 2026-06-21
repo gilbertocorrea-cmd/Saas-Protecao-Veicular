@@ -1,0 +1,72 @@
+
+
+
+# Dependências
+node_modules/
+
+# Documentação interna
+docs/
+
+# Agentes IA
+AGENTE_COPILOT.md
+AGENTE_CLAUDE.md
+AGENTE_CURSOR.md
+AGENTE_*
+
+# Ambiente
+.env
+.env.*
+
+# Uploads
+uploads/
+src/uploads/
+
+# Chaves JWT
+private.pem
+public.pem
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Uploads
+uploads/
+src/uploads/
+
+# Prisma
+prisma/dev.db
+prisma/*.db
+
+# Logs
+logs/
+*.log
+
+# Build
+dist/
+build/
+
+# Chaves
+private.pem
+public.pem
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

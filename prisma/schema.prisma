@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  status    String   @default("ATIVO")
+
+  usuarios  Usuario[]
+  vehicles  Veiculo[]
+  tokens    RefreshToken[]
+
+  createdAt DateTime @default(now())
+}
+
+model Usuario {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  email          String   @unique
+  senha          String
+  tipo_usuario   String
+  status         String   @default("ATIVO")
+  tenantId       Int
+  tokenVersion   Int      @default(0)
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  refreshTokens  RefreshToken[]
+
+  createdAt      DateTime @default(now())
+}
+
+model RefreshToken {
+  id            String   @id
+  userId        Int
+  tenantId      Int
+  tokenHash     String
+  ip            String?
+  userAgent     String?
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  replacedById  String?
+
+  user          Usuario  @relation(fields: [userId], references: [id])
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([tenantId])
+}
+
+model Veiculo {
+  id          Int      @id @default(autoincrement())
+  marca       String
+  modelo      String
+  ano         Int
+  placa       String
+  tenantId    Int
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  createdAt   DateTime @default(now())
+  
+}
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  tenantId   Int
+  userId     Int
+  action     String
+  entity     String
+  entityId   String
+  metadata   Json?
+
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([userId])
+}
