@@ -1,186 +1,311 @@
-# 🚀 SaaS Proteção Veicular — Backend
+# 🚀 SaaS Proteção Veicular
 
-API principal de um sistema SaaS white-label para gestão de associações de proteção veicular.
+Backend de um sistema SaaS White Label para gestão de associações de proteção veicular.
 
-Projetado com foco em:
-- Multi-tenant real
-- Segurança de nível produção
+Projeto desenvolvido com foco em:
+
+- Multi-Tenant
+- Segurança
 - Escalabilidade
-- Arquitetura modular
+- Arquitetura Modular
+- Boas práticas de desenvolvimento
+
+---
+
+# 📌 Sobre o Projeto
+
+O objetivo do sistema é permitir que múltiplas associações de proteção veicular utilizem a mesma aplicação com isolamento completo de dados entre clientes (tenants).
+
+A arquitetura foi construída para suportar crescimento gradual, adicionando módulos conforme a evolução do negócio.
 
 ---
 
 # 🛠️ Stack Tecnológica
 
-- Runtime: Node.js (v20+)
-- Linguagem: TypeScript (Strict Mode)
-- Framework: Express.js 5.x
-- ORM: Prisma
-- Banco: MariaDB / MySQL
-- Cache/Fila (em breve): Redis
-- Storage (em breve): S3 / Backblaze
+## Backend
+
+- Node.js
+- TypeScript
+- Express.js
+
+## Banco de Dados
+
+- MariaDB
+- Prisma ORM
+
+## Segurança
+
+- JWT RS256
+- Refresh Token Rotation
+- Bcrypt
+- RBAC
+- Rate Limiting
+- Validação com Zod
+
+## Infraestrutura
+
+- Multi-Tenant
+- AsyncLocalStorage
+- Prisma Middleware
 
 ---
 
-# 🧠 Arquitetura
+# 🏗️ Arquitetura
 
-Sistema baseado em módulos:
+O projeto segue arquitetura modular:
+
+```text
 src/
-modules/
-auth/
-user/
-vehicle/
+├── modules/
+├── middleware/
+├── services/
+├── config/
+├── shared/
+└── prisma/
+```
 
+Cada módulo possui sua própria separação de responsabilidades:
 
-...
-
-
-Separação por:
-- controller
-- service
-- validação
-- regras de negócio
-
----
-
-# 🔐 Segurança (Implementado)
-
-- ✔️ Bcrypt (hash de senha)
-- ✔️ JWT RS256 (Access Token 15min)
-- ✔️ Refresh Token com rotação + hash no banco
-- ✔️ Rate limit básico (login)
-- ✔️ Validação com Zod
-- ✔️ Bloqueio de usuário INATIVO
+```text
+module/
+├── controller
+├── service
+├── routes
+├── schemas
+```
 
 ---
 
-# 🏢 Multi-Tenant (Implementado)
+# 🔐 Segurança Implementada
 
-- ✔️ 1 banco com `tenantId`
-- ✔️ Isolamento automático via Prisma middleware
-- ✔️ Contexto por request (AsyncLocalStorage)
-- ✔️ ADMIN_MASTER pode ver todos tenants
+### Autenticação
 
-👉 Nenhuma query depende do dev lembrar de filtrar
+- JWT RS256
+- Access Token
+- Refresh Token
+- Rotação de Tokens
+- Logout Seguro
+
+### Senhas
+
+- Hash com Bcrypt
+- Nunca armazenadas em texto puro
+
+### Validação
+
+- Zod
+- Sanitização de entrada
+- Tratamento centralizado de erros
+
+### Proteções
+
+- Rate Limit
+- Controle de acesso por perfil
+- Isolamento por tenant
 
 ---
 
-# 🔑 RBAC (Controle de Acesso)
+# 🏢 Multi-Tenant
 
-Hierarquia:
+Implementado utilizando:
 
-- ADMIN_MASTER → dono do SaaS
-- GESTOR → dono da seguradora (tenant)
-- FUNCIONARIO → equipe
-- CLIENTE → usuário final
+- tenantId em entidades
+- AsyncLocalStorage
+- Middleware de contexto
+- Prisma Middleware
+
+Benefícios:
+
+- Isolamento automático
+- Segurança entre clientes
+- Escalabilidade
+
+Nenhuma consulta depende do desenvolvedor lembrar de aplicar filtros manualmente.
+
+---
+
+# 🔑 RBAC (Role Based Access Control)
+
+Perfis disponíveis:
+
+```text
+ADMIN_MASTER
+GESTOR
+FUNCIONARIO
+CLIENTE
+```
 
 Regras:
 
-- Apenas GESTOR gerencia usuários
-- Sem escalonamento de privilégio
-- Acesso isolado por tenant
+- ADMIN_MASTER gerencia o SaaS
+- GESTOR gerencia sua associação
+- FUNCIONARIO possui permissões operacionais
+- CLIENTE possui acesso restrito
 
 ---
 
-# 🧾 Auditoria (AuditLog)
+# 📋 Módulos Implementados
 
-- ✔️ Todas operações de escrita são logadas
-- ✔️ Rastreabilidade completa de ações
-- ✔️ Base para compliance e debugging
+## ✅ Auth
+
+- Login
+- JWT
+- Refresh Token
+- Rotação de Tokens
+- Controle de Sessão
+
+## ✅ User
+
+- CRUD
+- Controle de Status
+- RBAC
+- Token Version
+
+## ✅ Tenant
+
+- Cadastro
+- Controle de Tenant
+- Suspensão
+- Reativação
+
+## ✅ Vehicle
+
+- CRUD
+- Estrutura FIPE
+- Base para vistoria
+
+## ✅ Upload
+
+- Upload de arquivos
+- Organização por tenant
 
 ---
 
-# 🧱 Módulos Atuais
+# 🚧 Em Desenvolvimento
 
-## Auth
-- Login com bcrypt
-- JWT + refresh token
-- Rotação segura de tokens
+## Inspection
 
-## User
-- CRUD completo
-- RBAC aplicado
-- Desativação (não delete)
-- tokenVersion para invalidar sessão
+- Vistorias
+- Upload de imagens
+- Fluxo operacional
 
-## Vehicle
-- CRUD completo
-- Integração com FIPE
-- Base pronta para vistoria
+## Contract
+
+- Contratos
+- PDF
+- Assinaturas
+
+## Payment
+
+- PIX
+- Webhooks
+- Integração financeira
 
 ---
 
-# ⚙️ Configuração
+# 📅 Planejado
 
-## 1. Variáveis de Ambiente
+## Claim
 
-```env
-DATABASE_URL="mysql://usuario:senha@localhost:3306/db"
-JWT_PRIVATE_KEY="..."
-JWT_PUBLIC_KEY="..."
+- Gestão de Sinistros
 
+## AI
 
-2. Instalação
+- Análise Antifraude
+- Score de Risco
+
+## Notification
+
+- Email
+- WhatsApp
+- Alertas
+
+## Dashboard
+
+- Indicadores
+- Relatórios
+- KPIs
+
+---
+
+# 📊 Status Atual
+
+| Módulo | Status |
+|---------|---------|
+| Auth | ✅ |
+| Multi-Tenant | ✅ |
+| RBAC | ✅ |
+| User | ✅ |
+| Tenant | ✅ |
+| Vehicle | ✅ |
+| Upload | ✅ |
+| Inspection | 🚧 |
+| Contract | 🚧 |
+| Payment | 🚧 |
+| Claim | ❌ |
+| AI | ❌ |
+| Dashboard | ❌ |
+
+---
+
+# 📚 Aprendizados Aplicados
+
+Este projeto utiliza conceitos de:
+
+- Arquitetura em Camadas
+- Clean Code
+- SOLID
+- REST API
+- Multi-Tenancy
+- JWT
+- Refresh Token Rotation
+- RBAC
+- Prisma ORM
+- MariaDB
+- TypeScript
+- Express.js
+
+---
+
+# ⚙️ Instalação
+
+## Clonar
+
+```bash
+git clone https://github.com/gilbertocorrea-cmd/Saas-Protecao-Veicular.git
+```
+
+## Instalar dependências
+
+```bash
 npm install
+```
 
-3. Banco de Dados
+## Executar migrations
+
+```bash
 npx prisma migrate dev
+```
 
-4. Rodar servidor
+## Iniciar servidor
+
+```bash
 npm run dev
+```
 
+---
 
+# 👨‍💻 Autor
 
+**Gilberto Corrêa Filho**
 
+- ADS — FATEC Arthur de Azevedo
+- Backend Developer
+- Node.js
+- TypeScript
+- Segurança da Informação
+- Linux
 
-📡 Endpoints Exemplo
-Auth
+GitHub:
 
-POST /auth/login
-POST /auth/refresh
-
-User
-
-GET /users
-POST /users
-PUT /users/:id
-PATCH /users/:id/deactivate
-
-Vehicle
-
-GET /vehicles
-POST /vehicles
-PUT /vehicles/:id
-DELETE /vehicles/:id
-
-
-
-
-🚨 Regras de Negócio
-Sem vistoria → sem contrato
-Cliente inadimplente → bloqueio automático
-Tenant não pago → bloqueado pelo sistema
-Nunca deletar dados críticos (usar status)
-
-
-
-🚀 Próximos Passos
-📸 Módulo de Vistoria (upload + GPS)
-💳 Integração com PSP (PIX/Boleto)
-📄 Geração de contrato PDF
-🤖 IA antifraude (worker + scoring)
-📊 Dashboard Admin Master
-
-
-
-🧠 Observações
-Sistema pronto para escala multi-tenant
-Base segura para produção (com ajustes finos)
-Arquitetura preparada para crescimento
-
-
-📌 Status do Projeto
-
-🟢 Base completa (Auth + Multi-tenant + RBAC + Audit)
-
-👉 Pronto para evolução de features
+https://github.com/gilbertocorrea-cmd
